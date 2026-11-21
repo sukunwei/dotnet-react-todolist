@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 共用建置設定（框架版本、可空性、隱含 using、警告視為錯誤）
+       定義於 backend/Directory.Build.props，此處不重複宣告。 -->
+
+</Project>
