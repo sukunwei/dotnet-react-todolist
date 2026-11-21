@@ -11,6 +11,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <!-- EF Core 固定 9.0.23（計畫「框架版本」全域約束）。
+         Design 套件為 PrivateAssets，其相依的 EF Core 9.0.23 不會流向消費端（Api），
+         而 Pomelo 傳入的是 9.0.0，導致 Infrastructure.dll（9.0.23）與 Api（9.0.0）
+         版本衝突（MSB3277）並可能造成執行期 AssemblyLoadException。
+         明確引用 Relational 9.0.23 可讓整個方案統一於 9.0.23。 -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.23" />
   </ItemGroup>
 
   <ItemGroup>
