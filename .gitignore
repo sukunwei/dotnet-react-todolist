@@ -14,3 +14,6 @@ dist/
 
 # Superpowers 工作區
 .superpowers/
+
+# Playwright MCP 暫存（console log / page snapshot）
+.playwright-mcp/
