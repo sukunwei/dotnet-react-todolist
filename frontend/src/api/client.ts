@@ -24,6 +24,8 @@ export class ApiError extends Error {
  * ASP.NET Core 的 ModelState 驗證錯誤會把真正的中文訊息放在 `errors` 字典內
  * （此時 `title` 只是英文樣板 "One or more validation errors occurred."），
  * 其他錯誤（404、查詢參數錯誤等）則把中文訊息放在 `detail`。
+ *
+ * 例外：5xx 伺服器錯誤一律改用中文通用訊息，因為後端只會回傳英文的 `title`。
  */
 async function parseError(res: Response): Promise<ApiError> {
   let body: unknown = null
@@ -41,8 +43,12 @@ async function parseError(res: Response): Promise<ApiError> {
     ? Object.values(problem.errors).flat()[0]
     : undefined
 
+  // 伺服器端未預期的例外（5xx）只會回傳英文的 "Internal Server Error" 樣板，
+  // 直接顯示會讓全中文介面出現英文字串，因此改用中文通用訊息。
   const message =
-    fieldError ?? problem?.detail ?? problem?.title ?? `操作失敗（HTTP ${res.status}）`
+    res.status >= 500
+      ? '伺服器發生錯誤，請稍後再試'
+      : (fieldError ?? problem?.detail ?? problem?.title ?? `操作失敗（HTTP ${res.status}）`)
 
   return new ApiError(res.status, message)
 }

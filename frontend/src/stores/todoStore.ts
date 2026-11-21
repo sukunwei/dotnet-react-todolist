@@ -131,7 +131,10 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     } finally {
       // 背景更新（silent）不設定也不清除 loading：
       // 只有會把 loading 設為 true 的前景請求才負責將它复位。
-      if (!silent) set({ loading: false })
+      // 已被更新的請求（requestId !== requestSeq）不得碰 loading，
+      // 否則它晚到的 finally 會在 items 還是空的情況下清掉 loading，
+      // 讓畫面誤顯示「沒有任何任務」而不是 loading skeleton。
+      if (!silent && requestId === requestSeq) set({ loading: false })
     }
   },
 
@@ -235,15 +238,25 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     }
   },
 
-  /** 切換篩選條件並重新載入；同時放棄進行中的編輯 */
+  /**
+   * 切換篩選條件並重新載入。
+   *
+   * 不會清掉 `editingId`／`editingDraft`：表單的欄位狀態是元件內的 local state，
+   * 只要 `editingId` 不變，`App.tsx` 的 `key={editingId ?? 'new'}` 就不變，
+   * 表單不會重新掛載，使用者已輸入的內容在重新載入後仍然保留。
+   */
   setFilter: (filter) => {
-    set({ filter, editingId: null, editingDraft: null })
+    set({ filter })
     void get().fetchTodos()
   },
 
-  /** 切換排序並重新載入；同時放棄進行中的編輯 */
+  /**
+   * 切換排序並重新載入。
+   *
+   * 與 `setFilter` 相同：不會放棄進行中的編輯，理由見該方法的說明。
+   */
   setSort: (sort) => {
-    set({ sort, editingId: null, editingDraft: null })
+    set({ sort })
     void get().fetchTodos()
   },
 

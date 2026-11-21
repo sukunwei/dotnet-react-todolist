@@ -132,9 +132,30 @@ public sealed class TodoItemService : ITodoItemService
         return priority;
     }
 
+    /// <summary>
+    /// 將截止時間正規化為 UTC。
+    ///
+    /// <para>
+    /// 邊界規則：只接受帶時區位移（<c>DateTimeKind.Local</c>）或以 <c>Z</c> 結尾
+    /// （<c>DateTimeKind.Utc</c>）的 ISO-8601 時間。
+    /// 不帶位移的字串（例如 <c>"2026-12-01T09:00"</c>）會被反序列化成
+    /// <c>DateTimeKind.Unspecified</c>，此時 <c>ToUniversalTime()</c> 會把它當作伺服器
+    /// 本地時間而平移，導致截止時間被記在錯誤的時間點，因此必須在邊界直接拒絕。
+    /// </para>
+    /// </summary>
     private static DateTime? NormalizeDueDate(DateTime? dueDate)
     {
-        if (dueDate.HasValue && dueDate.Value.Kind != DateTimeKind.Utc)
+        if (!dueDate.HasValue)
+        {
+            return null;
+        }
+
+        if (dueDate.Value.Kind == DateTimeKind.Unspecified)
+        {
+            throw new ValidationException("dueDate 必須為帶時區位移或 Z 的 ISO-8601 時間。");
+        }
+
+        if (dueDate.Value.Kind != DateTimeKind.Utc)
         {
             return dueDate.Value.ToUniversalTime();
         }
