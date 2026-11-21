@@ -72,7 +72,9 @@ export default function App() {
       </div>
 
       <div className="mt-6">
-        {loading ? (
+        {loading && items.length === 0 ? (
+          // 只有在「真的沒有東西可顯示」時才顯示 skeleton；
+          // 已經有資料時（例如背景更新），保留列表不換成 skeleton。
           <div className="space-y-3">
             {[0, 1, 2].map((index) => (
               <div

@@ -38,6 +38,18 @@ let toastSeq = 0
 let requestSeq = 0
 
 /**
+ * 持有 `loading` 的請求序號：記錄「哪一次請求把 loading 設為 true」。
+ *
+ * 只有前景請求（`silent` 為 false）會取得這個所有權；
+ * 取得所有權的那一次請求結束時才會把 `loading` 复位。
+ * 背景（silent）請求永遠不會取得所有權，也不會碰 `loading`。
+ *
+ * 如此可避免：前景請求被背景請求蓋掉序號後，沒有任何人負責把 `loading` 复位，
+ * 導致畫面永遠停在 skeleton。
+ */
+let loadingOwnerId: number | null = null
+
+/**
  * 將任意錯誤轉為可直接顯示的訊息。
  *
  * `ApiError` 帶有後端的中文訊息，為主要的訊息來源；
@@ -117,6 +129,9 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     const { filter, sort } = get()
 
     if (!silent) {
+      // 取得 loading 的所有權：所有權歸屬於「這一次」請求，
+      // 由它自己結束時負責复位，其他請求不得代勞。
+      loadingOwnerId = requestId
       set({ loading: true })
     }
     set({ error: null })
@@ -129,12 +144,17 @@ export const useTodoStore = create<TodoState>((set, get) => ({
       if (requestId !== requestSeq) return
       set({ error: toErrorMessage(error) })
     } finally {
-      // 背景更新（silent）不設定也不清除 loading：
-      // 只有會把 loading 設為 true 的前景請求才負責將它复位。
-      // 已被更新的請求（requestId !== requestSeq）不得碰 loading，
-      // 否則它晚到的 finally 會在 items 還是空的情況下清掉 loading，
-      // 讓畫面誤顯示「沒有任何任務」而不是 loading skeleton。
-      if (!silent && requestId === requestSeq) set({ loading: false })
+      // loading 的复位由「持有它的請求」負責：
+      // 前景請求啟動時取得所有權（loadingOwnerId = requestId），
+      // 結束時只有當它仍是持有者才复位 loading，並釋放所有權。
+      //
+      // 背景（silent）請求永不取得所有權，也不碰 loading。
+      // 若改用 requestId === requestSeq 判斷，背景請求遞增序號後會讓
+      // 前景請求誤以為自己已被取代，導致 loading 永遠沒有人复位（畫面卡在 skeleton）。
+      if (!silent && loadingOwnerId === requestId) {
+        loadingOwnerId = null
+        set({ loading: false })
+      }
     }
   },
 
