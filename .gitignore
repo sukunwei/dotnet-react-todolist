@@ -1,0 +1,16 @@
+# .NET
+bin/
+obj/
+*.user
+
+# Node
+node_modules/
+dist/
+*.local
+
+# 環境
+.env
+.env.local
+
+# Superpowers 工作區
+.superpowers/
