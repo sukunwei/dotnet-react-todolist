@@ -7,4 +7,11 @@
     <ProjectReference Include="..\TodoList.Domain\TodoList.Domain.csproj" />
   </ItemGroup>
 
+  <!-- DI 註冊需要 IServiceCollection。此處刻意以「框架參考」取得
+       Microsoft.Extensions.DependencyInjection.Abstractions，而非 NuGet 套件，
+       以維持本專案零外部套件的約束（不引入 EF Core 或任何第三方套件）。 -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
 </Project>
