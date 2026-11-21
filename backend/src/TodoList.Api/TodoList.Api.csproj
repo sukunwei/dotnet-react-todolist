@@ -5,6 +5,13 @@
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.1" />
+    <!-- EF Core 設計期工具套件。置於啟動專案（Api），dotnet ef 才能由啟動專案解析
+         Microsoft.EntityFrameworkCore.Design；PrivateAssets=all 確保設計期組件
+         不會進入發行輸出，也不會流向消費端。 -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.23">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
