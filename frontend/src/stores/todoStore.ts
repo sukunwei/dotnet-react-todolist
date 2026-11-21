@@ -37,11 +37,16 @@ let toastSeq = 0
  */
 let requestSeq = 0
 
-/** 將任意錯誤轉為可直接顯示的訊息（`ApiError` 帶有後端的中文訊息） */
+/**
+ * 將任意錯誤轉為可直接顯示的訊息。
+ *
+ * `ApiError` 帶有後端的中文訊息，為主要的訊息來源；
+ * 其他錯誤（例如網路連線失敗時瀏覽器丟出的英文 "Failed to fetch"）
+ * 一律改用中文通用訊息，避免介面上出現英文字串。
+ */
 function toErrorMessage(error: unknown): string {
   if (error instanceof ApiError) return error.message
-  if (error instanceof Error && error.message) return error.message
-  return '操作失敗，請稍後再試'
+  return '網路連線失敗，請稍後再試'
 }
 
 /** `fetchTodos` 的選項 */
@@ -124,7 +129,9 @@ export const useTodoStore = create<TodoState>((set, get) => ({
       if (requestId !== requestSeq) return
       set({ error: toErrorMessage(error) })
     } finally {
-      set({ loading: false })
+      // 背景更新（silent）不設定也不清除 loading：
+      // 只有會把 loading 設為 true 的前景請求才負責將它复位。
+      if (!silent) set({ loading: false })
     }
   },
 
