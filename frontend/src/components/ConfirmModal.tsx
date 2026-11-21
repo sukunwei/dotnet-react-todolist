@@ -19,7 +19,9 @@ export default function ConfirmModal({
 }: ConfirmModalProps) {
   // 以 ref 保存最新的 onCancel，避免父層每次 render 產生新函式而重跑 effect
   const onCancelRef = useRef(onCancel)
-  onCancelRef.current = onCancel
+  useEffect(() => {
+    onCancelRef.current = onCancel
+  }, [onCancel])
 
   // 開啟時鎖定 body 捲動，關閉時還原；並支援 Esc 取消
   useEffect(() => {

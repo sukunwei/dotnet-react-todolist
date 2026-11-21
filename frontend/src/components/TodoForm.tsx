@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useTodoStore } from '../stores/todoStore'
 import type { CreateTodoInput, TodoPriority } from '../types/todo'
@@ -15,30 +15,16 @@ export default function TodoForm() {
   const updateTodo = useTodoStore((state) => state.updateTodo)
   const cancelEditing = useTodoStore((state) => state.cancelEditing)
 
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [dueDate, setDueDate] = useState('')
-  const [priority, setPriority] = useState<TodoPriority>(2)
+  // 初始值直接由 editingDraft 推導，不在 effect 中 setState：
+  // App.tsx 以 `key={editingId ?? 'new'}` 掛載本元件，編輯對象一變化就會重新掛載，
+  // 因此這些初始值必定對應當下的編輯草稿，不會出現舊資料殘留的一幀。
+  const [title, setTitle] = useState(() => editingDraft?.title ?? '')
+  const [description, setDescription] = useState(() => editingDraft?.description ?? '')
+  const [dueDate, setDueDate] = useState(() => toLocalInputValue(editingDraft?.dueDate ?? null))
+  const [priority, setPriority] = useState<TodoPriority>(() => editingDraft?.priority ?? 2)
   const [error, setError] = useState<string | null>(null)
 
   const isEditing = editingId !== null
-
-  // 進入／離開編輯模式時，把編輯草稿帶入表單（截止時間需轉成本地時間格式）
-  useEffect(() => {
-    if (editingId !== null && editingDraft) {
-      setTitle(editingDraft.title)
-      setDescription(editingDraft.description ?? '')
-      setDueDate(toLocalInputValue(editingDraft.dueDate))
-      setPriority(editingDraft.priority)
-      setError(null)
-    } else {
-      setTitle('')
-      setDescription('')
-      setDueDate('')
-      setPriority(2)
-      setError(null)
-    }
-  }, [editingId, editingDraft])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -67,20 +53,22 @@ export default function TodoForm() {
 
     if (!success) return
 
-    setTitle('')
-    setDescription('')
-    setDueDate('')
-    setPriority(2)
-    if (editingId !== null) cancelEditing()
+    if (editingId === null) {
+      // 新增模式：key 維持 'new'，表單不會重新掛載，必須自行清空欄位
+      setTitle('')
+      setDescription('')
+      setDueDate('')
+      setPriority(2)
+      setError(null)
+    } else {
+      // 編輯模式：store 已把 editingId 清為 null，key 改變會重新掛載成空白的新增表單
+      cancelEditing()
+    }
   }
 
   function handleCancel() {
+    // editingId 歸 null 後 key 改變，表單重新掛載並回到空白的新增模式
     cancelEditing()
-    setTitle('')
-    setDescription('')
-    setDueDate('')
-    setPriority(2)
-    setError(null)
   }
 
   const inputClass =

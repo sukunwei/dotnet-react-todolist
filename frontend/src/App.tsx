@@ -17,6 +17,8 @@ export default function App() {
   const deleteTarget = useTodoStore((state) => state.deleteTarget)
   const clearConfirmOpen = useTodoStore((state) => state.clearConfirmOpen)
   const toasts = useTodoStore((state) => state.toasts)
+  // 供 TodoForm 的 key 使用：編輯對象一變化就重新掛載表單
+  const editingId = useTodoStore((state) => state.editingId)
 
   const fetchTodos = useTodoStore((state) => state.fetchTodos)
   const setFilter = useTodoStore((state) => state.setFilter)
@@ -41,7 +43,7 @@ export default function App() {
       </header>
 
       <div className="mt-6">
-        <TodoForm />
+        <TodoForm key={editingId ?? 'new'} />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
