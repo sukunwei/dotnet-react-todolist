@@ -55,12 +55,3 @@ Base path `/api/todos`，共 7 個端點。
 | DELETE | `/api/todos/completed` | 清除所有已完成任務 |
 
 錯誤回應統一為 `ProblemDetails`。所有時間以 UTC 儲存與傳輸，JSON 一律帶 `Z` 後綴。
-
-## 文件
-
-| 文件 | 內容 |
-|---|---|
-| [`docs/prd.md`](docs/prd.md) | 產品需求 |
-| [`docs/技術文檔.md`](docs/技術文檔.md) | 架構、資料模型、API 合約、視覺規格 |
-| [`docs/plan.md`](docs/plan.md) | 實作計劃 |
-| [`docs/驗收報告.md`](docs/驗收報告.md) | 端對端驗收結果（截圖見 `docs/screenshots/`） |

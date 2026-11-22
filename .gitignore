@@ -17,3 +17,6 @@ dist/
 
 # Playwright MCP 暫存（console log / page snapshot）
 .playwright-mcp/
+
+# 內部文件（PRD / 技術文檔 / 實作計劃 / 驗收報告）——僅保留於本機
+docs/
